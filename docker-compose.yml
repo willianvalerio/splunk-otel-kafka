@@ -78,7 +78,7 @@ services:
   curl:
     image: curlimages/curl
     container_name: curl
-    command: ["/bin/sh", "-c", "while true; do curl -s http://application:5000 ; sleep 2 ; echo '' ; done"]
+    command: ["/bin/sh", "-c", "while true; do curl -s http://application:5000 ; sleep 1 ; echo '' ; done"]
     
     
         

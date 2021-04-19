@@ -23,7 +23,6 @@ docker-compose up -d --build --remove-orphans
 
 ## Clean Up
 
-
 ```bash
 docker-compose down --remove-orphans
 ```
