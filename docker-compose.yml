@@ -47,6 +47,8 @@ services:
   application:
     depends_on:
       - producer
+      - kafka
+      - consumer
     build: python-api
     image: kafka-python-api
     container_name: application
@@ -79,7 +81,11 @@ services:
   curl:
     image: curlimages/curl
     container_name: curl
-    command: ["/bin/sh", "-c", "while true; do curl -s http://application:5000 ; sleep 1 ; echo '' ; done"]
+    depends_on: 
+      - kafka
+      - application
+      - zookeeper
+    command: ["/bin/sh", "-c", "sleep 20; while true; do curl -s http://application:5000 ; sleep 1 ; echo '' ; done"]
     
     
         
