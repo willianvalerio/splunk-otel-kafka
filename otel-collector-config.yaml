@@ -85,6 +85,9 @@ processors:
     check_interval: 2s
     # TODO: Ensure this is set properly
     limit_mib: 460
+  resourcedetection:
+    detectors: [system]
+    override: false
 exporters:
   # Traces
   sapm:
@@ -99,17 +102,33 @@ exporters:
     # TODO: Ensure this is set properly
     realm: "${SPLUNK_REALM}"
 service:
-  extensions: [health_check, http_forwarder, zpages]
+  extensions:
+    - health_check
+    - http_forwarder
+    - zpages
   pipelines:
     traces:
       receivers: [jaeger, otlp, sapm, zipkin]
-      processors: [memory_limiter, batch]
+      processors:
+        - memory_limiter
+        - resourcedetection
+        - batch
       exporters: [sapm, signalfx]
     metrics:
-      receivers: [otlp, signalfx, prometheus, hostmetrics]
-      processors: [memory_limiter, batch]
+      receivers:
+        - otlp
+        - signalfx
+        - prometheus
+        - hostmetrics
+      processors:
+        - memory_limiter
+        - batch
+        - resourcedetection
       exporters: [signalfx]
     logs:
       receivers: [signalfx]
-      processors: [memory_limiter, batch]
+      processors:
+        - memory_limiter
+        - batch
+        - resourcedetection
       exporters: [signalfx]
