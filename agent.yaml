@@ -2,23 +2,27 @@
 # *Required* The access token for the org that you wish to send metrics to.
 signalFxAccessToken: ${SFX_ACCESS_TOKEN}
 traceEndpointUrl: ${SFX_TRACE_ENDPOINT_URL}
-
+signalFxRealm: ${SPLUNK_REALM}
 intervalSeconds: 10
-hostname: ${HOSTNAME}
 logging:
   # Valid values are 'debug', 'info', 'warning', and 'error'
   level: info
-
+globalDimensions:
+  environment: ${SFX_ENVIRONMENT}
 # observers are what discover running services in the environment
 observers:
   - type: host
-
+  - type: docker
+procPath: /hostfs/proc
+etcPath: /hostfs/etc
 monitors:
   - {"#from": "/etc/signalfx/monitors/*.yaml", flatten: true, optional: true}
   - type: host-metadata
+  - type: docker-container-stats
   - type: processlist
   - type: cpu
   - type: filesystems
+    hostFSPath: /hostfs
   - type: disk-io
   - type: net-io
   - type: load
@@ -28,9 +32,9 @@ monitors:
   - type: signalfx-forwarder
     listenAddress: 0.0.0.0:9080
     # Used to add a tag to spans missing it
-    defaultSpanTags:
+    #defaultSpanTags:
      # Set the environment filter in SignalFx
-     environment: ${SFX_ENVIRONMENT}
+     #environment: ${SFX_ENVIRONMENT}
     # Used to add and override a tag on a span
     #extraSpanTags:
      #SPAN_TAG_KEY: "SPAN_TAG_VALUE"
@@ -38,11 +42,15 @@ monitors:
     host: kafka
     port: 9989
     clusterName: wvalerio-kafka
+    mBeansToOmit:
+    - "kafka.log.flush"
   - type: collectd/zookeeper
     host: zookeeper
     port: 2181
+    
   
 
 # Required: What format to send data in
 writer:
   traceExportFormat: sapm
+  addGlobalDimensionsAsSpanTags: true
