@@ -60,25 +60,25 @@ services:
   #     SPLUNK_SERVICE_NAME: "application"
   #     SPLUNK_METRICS_ENDPOINT: "http://sfx-smart-agent:9080/v2/datapoint"
 
-  sfx-smart-agent:
-    image: quay.io/signalfx/signalfx-agent:5
-    container_name: signalfx-agent
-    pid: host
-    ports: 
-    - 9080:9080
-    environment: 
-      SFX_ACCESS_TOKEN: "${SPLUNK_ACCESS_TOKEN}"
-      SFX_INGEST_URL: "https://ingest.${SPLUNK_REALM}.signalfx.com"
-      SFX_API_URL: "https://api.${SPLUNK_REALM}.signalfx.com"
-      SFX_TRACE_ENDPOINT_URL: "https://ingest.${SPLUNK_REALM}.signalfx.com/v2/trace"
-      SFX_ENVIRONMENT: wvalerio-kafka
-      SPLUNK_REALM: ${SPLUNK_REALM}
-      HOSTNAME: wvalerio-kafka
-    volumes: 
-      - /etc/passwd:/etc/passwd:ro
-      - /:/hostfs:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./agent.yaml:/etc/signalfx/agent.yaml
+  # sfx-smart-agent:
+  #   image: quay.io/signalfx/signalfx-agent:5
+  #   container_name: signalfx-agent
+  #   pid: host
+  #   ports: 
+  #   - 9080:9080
+  #   environment: 
+  #     SFX_ACCESS_TOKEN: "${SPLUNK_ACCESS_TOKEN}"
+  #     SFX_INGEST_URL: "https://ingest.${SPLUNK_REALM}.signalfx.com"
+  #     SFX_API_URL: "https://api.${SPLUNK_REALM}.signalfx.com"
+  #     SFX_TRACE_ENDPOINT_URL: "https://ingest.${SPLUNK_REALM}.signalfx.com/v2/trace"
+  #     SFX_ENVIRONMENT: wvalerio-kafka
+  #     SPLUNK_REALM: ${SPLUNK_REALM}
+  #     HOSTNAME: wvalerio-kafka
+  #   volumes: 
+  #     - /etc/passwd:/etc/passwd:ro
+  #     - /:/hostfs:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - ./agent.yaml:/etc/signalfx/agent.yaml
     
   # curl:
   #   image: curlimages/curl
@@ -88,15 +88,18 @@ services:
   #     - application
   #     - zookeeper
   #   command: ["/bin/sh", "-c", "sleep 20; while true; do curl -s http://application:5000 ; sleep 1 ; echo '' ; done"]
-    
-    
+
         
   splunk-otel-collector:
     image: quay.io/signalfx/splunk-otel-collector:latest
     container_name: splunk-otel-collector
     command: ["--config=/etc/otel-collector-config.yaml"]
+    pid: host
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - /etc/passwd:/etc/passwd:ro
+      - /:/hostfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       SPLUNK_ACCESS_TOKEN: "${SPLUNK_ACCESS_TOKEN}"
       SPLUNK_REALM: "${SPLUNK_REALM}"
