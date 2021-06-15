@@ -112,6 +112,7 @@ service:
         - hostmetrics
         - smartagent/docker
         - smartagent/zookeeper
+        - smartagent/kafka
       processors:
         - memory_limiter
         - batch
