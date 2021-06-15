@@ -12,6 +12,7 @@ globalDimensions:
 # observers are what discover running services in the environment
 observers:
   - type: host
+  - type: docker
 procPath: /hostfs/proc
 etcPath: /hostfs/etc
 monitors:
@@ -41,6 +42,8 @@ monitors:
     host: kafka
     port: 9989
     clusterName: wvalerio-kafka
+    mBeansToOmit:
+    - "kafka.log.flush"
   - type: collectd/zookeeper
     host: zookeeper
     port: 2181

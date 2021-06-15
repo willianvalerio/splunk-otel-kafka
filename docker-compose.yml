@@ -29,8 +29,9 @@ services:
     container_name: kafka-consumer
     environment: 
       OTEL_RESOURCE_ATTRIBUTES: "service.name=kafka-consumer"
-      OTEL_EXPORTER_JAEGER_ENDPOINT: "http://sfx-smart-agent:9080/v1/trace"
-      SPLUNK_METRICS_ENDPOINT: "http://sfx-smart-agent:9080/v2/datapoint"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://splunk-otel-collector:4317"
+      SPLUNK_METRICS_ENDPOINT: "http://splunk-otel-collector:9943"
+      SPLUNK_METRICS_ENABLED: "true"
 
   producer:
     depends_on:
@@ -42,8 +43,9 @@ services:
         - "8080:8080"
     environment: 
       OTEL_RESOURCE_ATTRIBUTES: "service.name=kafka-producer"
-      OTEL_EXPORTER_JAEGER_ENDPOINT: "http://sfx-smart-agent:9080/v1/trace"
-      SPLUNK_METRICS_ENDPOINT: "http://sfx-smart-agent:9080/v2/datapoint"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://splunk-otel-collector:4317"
+      SPLUNK_METRICS_ENDPOINT: "http://splunk-otel-collector:9943"
+      SPLUNK_METRICS_ENABLED: "true"
 
   application:
     depends_on:
@@ -56,29 +58,29 @@ services:
     ports:
         - "5000:5000"
     environment:
-      OTEL_EXPORTER_JAEGER_ENDPOINT: "http://sfx-smart-agent:9080/v1/trace"
-      SPLUNK_SERVICE_NAME: "application"
-      SPLUNK_METRICS_ENDPOINT: "http://sfx-smart-agent:9080/v2/datapoint"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://splunk-otel-collector:4317"
+      OTEL_SERVICE_NAME: "application"
+      #SPLUNK_METRICS_ENDPOINT: "http://splunk-otel-collector:9080/v2/datapoint"
 
-  sfx-smart-agent:
-    image: quay.io/signalfx/signalfx-agent:5
-    container_name: signalfx-agent
-    pid: host
-    ports: 
-    - 9080:9080
-    environment: 
-      SFX_ACCESS_TOKEN: "${SPLUNK_ACCESS_TOKEN}"
-      SFX_INGEST_URL: "https://ingest.${SPLUNK_REALM}.signalfx.com"
-      SFX_API_URL: "https://api.${SPLUNK_REALM}.signalfx.com"
-      SFX_TRACE_ENDPOINT_URL: "https://ingest.${SPLUNK_REALM}.signalfx.com/v2/trace"
-      SFX_ENVIRONMENT: wvalerio-kafka
-      SPLUNK_REALM: ${SPLUNK_REALM}
-      HOSTNAME: wvalerio-kafka
-    volumes: 
-      - /etc/passwd:/etc/passwd:ro
-      - /:/hostfs:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./agent.yaml:/etc/signalfx/agent.yaml
+  # sfx-smart-agent:
+  #   image: quay.io/signalfx/signalfx-agent:5
+  #   container_name: signalfx-agent
+  #   pid: host
+  #   ports: 
+  #   - 9080:9080
+  #   environment: 
+  #     SFX_ACCESS_TOKEN: "${SPLUNK_ACCESS_TOKEN}"
+  #     SFX_INGEST_URL: "https://ingest.${SPLUNK_REALM}.signalfx.com"
+  #     SFX_API_URL: "https://api.${SPLUNK_REALM}.signalfx.com"
+  #     SFX_TRACE_ENDPOINT_URL: "https://ingest.${SPLUNK_REALM}.signalfx.com/v2/trace"
+  #     SFX_ENVIRONMENT: wvalerio-kafka
+  #     SPLUNK_REALM: ${SPLUNK_REALM}
+  #     HOSTNAME: wvalerio-kafka
+  #   volumes: 
+  #     - /etc/passwd:/etc/passwd:ro
+  #     - /:/hostfs:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - ./agent.yaml:/etc/signalfx/agent.yaml
     
   curl:
     image: curlimages/curl
@@ -88,21 +90,30 @@ services:
       - application
       - zookeeper
     command: ["/bin/sh", "-c", "sleep 20; while true; do curl -s http://application:5000 ; sleep 1 ; echo '' ; done"]
-    
-    
+
         
-  # splunk-otel-collector:
-  #   image: quay.io/signalfx/splunk-otel-collector:latest
-  #   environment:
-  #     - SPLUNK_ACCESS_TOKEN=${SPLUNK_ACCESS_TOKEN}
-  #     - SPLUNK_REALM=${SPLUNK_REALM}
-  #   ports:
-  #     - "13133:13133"
-  #     - "14250:14250"
-  #     - "14268:14268"
-  #     - "4317:4317"
-  #     - "6060:6060"
-  #     - "7276:7276"
-  #     - "8888:8888"
-  #     - "9411:9411"
-  #     - "9943:9943"
+  splunk-otel-collector:
+    image: quay.io/signalfx/splunk-otel-collector:latest
+    container_name: splunk-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    pid: host
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - /etc/passwd:/etc/passwd:ro
+      - /:/hostfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      SPLUNK_ACCESS_TOKEN: "${SPLUNK_ACCESS_TOKEN}"
+      SPLUNK_REALM: "${SPLUNK_REALM}"
+      SPLUNK_ENVIRONMENT: wvalerio-kafka-otel
+      HOSTNAME: wvalerio-kafka
+    ports:
+      - "13133:13133"
+      - "14250:14250"
+      - "14268:14268"
+      - "4317:4317"
+      - "6060:6060"
+      - "7276:7276"
+      - "8888:8888"
+      - "9411:9411"
+      - "9943:9943"
