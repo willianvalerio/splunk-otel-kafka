@@ -21,44 +21,46 @@ services:
     depends_on:
       - zookeeper
     
-  # consumer:
-  #   depends_on:
-  #     - kafka
-  #   build: consumer
-  #   image: kafka-consumer
-  #   container_name: kafka-consumer
-  #   environment: 
-  #     OTEL_RESOURCE_ATTRIBUTES: "service.name=kafka-consumer"
-  #     OTEL_EXPORTER_JAEGER_ENDPOINT: "http://sfx-smart-agent:9080/v1/trace"
-  #     SPLUNK_METRICS_ENDPOINT: "http://sfx-smart-agent:9080/v2/datapoint"
+  consumer:
+    depends_on:
+      - kafka
+    build: consumer
+    image: kafka-consumer
+    container_name: kafka-consumer
+    environment: 
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=kafka-consumer"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://splunk-otel-collector:4317"
+      SPLUNK_METRICS_ENDPOINT: "http://splunk-otel-collector:9943"
+      SPLUNK_METRICS_ENABLED: "true"
 
-  # producer:
-  #   depends_on:
-  #     - kafka
-  #   build: producer
-  #   image: kafka-producer
-  #   container_name: kafka-producer
-  #   ports:
-  #       - "8080:8080"
-  #   environment: 
-  #     OTEL_RESOURCE_ATTRIBUTES: "service.name=kafka-producer"
-  #     OTEL_EXPORTER_JAEGER_ENDPOINT: "http://sfx-smart-agent:9080/v1/trace"
-  #     SPLUNK_METRICS_ENDPOINT: "http://sfx-smart-agent:9080/v2/datapoint"
+  producer:
+    depends_on:
+      - kafka
+    build: producer
+    image: kafka-producer
+    container_name: kafka-producer
+    ports:
+        - "8080:8080"
+    environment: 
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=kafka-producer"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://splunk-otel-collector:4317"
+      SPLUNK_METRICS_ENDPOINT: "http://splunk-otel-collector:9943"
+      SPLUNK_METRICS_ENABLED: "true"
 
-  # application:
-  #   depends_on:
-  #     - producer
-  #     - kafka
-  #     - consumer
-  #   build: python-api
-  #   image: kafka-python-api
-  #   container_name: application
-  #   ports:
-  #       - "5000:5000"
-  #   environment:
-  #     OTEL_EXPORTER_JAEGER_ENDPOINT: "http://sfx-smart-agent:9080/v1/trace"
-  #     SPLUNK_SERVICE_NAME: "application"
-  #     SPLUNK_METRICS_ENDPOINT: "http://sfx-smart-agent:9080/v2/datapoint"
+  application:
+    depends_on:
+      - producer
+      - kafka
+      - consumer
+    build: python-api
+    image: kafka-python-api
+    container_name: application
+    ports:
+        - "5000:5000"
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://splunk-otel-collector:4317"
+      OTEL_SERVICE_NAME: "application"
+      #SPLUNK_METRICS_ENDPOINT: "http://splunk-otel-collector:9080/v2/datapoint"
 
   # sfx-smart-agent:
   #   image: quay.io/signalfx/signalfx-agent:5
@@ -80,14 +82,14 @@ services:
   #     - /var/run/docker.sock:/var/run/docker.sock:ro
   #     - ./agent.yaml:/etc/signalfx/agent.yaml
     
-  # curl:
-  #   image: curlimages/curl
-  #   container_name: curl
-  #   depends_on: 
-  #     - kafka
-  #     - application
-  #     - zookeeper
-  #   command: ["/bin/sh", "-c", "sleep 20; while true; do curl -s http://application:5000 ; sleep 1 ; echo '' ; done"]
+  curl:
+    image: curlimages/curl
+    container_name: curl
+    depends_on: 
+      - kafka
+      - application
+      - zookeeper
+    command: ["/bin/sh", "-c", "sleep 20; while true; do curl -s http://application:5000 ; sleep 1 ; echo '' ; done"]
 
         
   splunk-otel-collector:
@@ -104,6 +106,7 @@ services:
       SPLUNK_ACCESS_TOKEN: "${SPLUNK_ACCESS_TOKEN}"
       SPLUNK_REALM: "${SPLUNK_REALM}"
       SPLUNK_ENVIRONMENT: wvalerio-kafka-otel
+      HOSTNAME: wvalerio-kafka
     ports:
       - "13133:13133"
       - "14250:14250"
