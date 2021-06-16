@@ -70,6 +70,13 @@ receivers:
     clusterName: ${HOSTNAME}
     mBeansToOmit:
     - "kafka.log.flush"
+  kafkametrics:
+    brokers: kafka:9092
+    protocol_version: 2.0.0
+    scrapers:
+      - brokers
+      - topics
+      - consumers
 processors:
   batch: null
   memory_limiter:
@@ -119,6 +126,7 @@ service:
         - smartagent/docker
         - smartagent/zookeeper
         - smartagent/kafka
+        - kafkametrics
       processors:
         - memory_limiter
         - batch
