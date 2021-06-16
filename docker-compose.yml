@@ -1,26 +1,25 @@
 version: '3.6'
 services:
   zookeeper:
-    image: docker.io/bitnami/zookeeper:3
+    image: wurstmeister/zookeeper
     container_name: zookeeper
     ports:
       - "2181:2181"
-    environment:
-      ALLOW_ANONYMOUS_LOGIN: "yes"
-      
+
   kafka:
-    image: docker.io/bitnami/kafka:2
+    image: wurstmeister/kafka
     container_name: kafka
     ports:
       - "9092:9092"
+      - "9989"
     environment:
-      KAFKA_CFG_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      ALLOW_PLAINTEXT_LISTENER: "yes"
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      JMX_PORT: "9989"
-    depends_on:
-      - zookeeper
-    
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_PORT: 9092
+      JMX_PORT: 9989
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock    
+   
   consumer:
     depends_on:
       - kafka
@@ -60,7 +59,6 @@ services:
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://splunk-otel-collector:4317"
       OTEL_SERVICE_NAME: "application"
-      #SPLUNK_METRICS_ENDPOINT: "http://splunk-otel-collector:9080/v2/datapoint"
 
   # sfx-smart-agent:
   #   image: quay.io/signalfx/signalfx-agent:5
