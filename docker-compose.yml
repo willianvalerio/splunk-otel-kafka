@@ -20,11 +20,11 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock    
     
-    kafka-cat:
-      image: confluentinc/cp-kafkacat
-      container_name: kafka-cat
-      command: ["/bin/sh", "-c", "trap : TERM INT; sleep infinity & wait"]
-      
+  kafka-cat:
+    image: confluentinc/cp-kafkacat
+    container_name: kafka-cat
+    command: ["/bin/sh", "-c", "trap : TERM INT; sleep infinity & wait"]
+
   consumer:
     depends_on:
       - kafka
