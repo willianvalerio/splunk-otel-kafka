@@ -23,7 +23,7 @@ docker-compose up -d --build --remove-orphans
 
 ## Outcomes
 
-After some seconds, your Service Map in Splunk Observability cloud will looks like this:
+After some seconds, your Service Map in Splunk Observability Cloud will looks like this:
 
 ![servicemap](/img/servicemap.png)
 
