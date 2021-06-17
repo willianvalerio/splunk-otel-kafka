@@ -21,6 +21,12 @@ Up and build containers
 docker-compose up -d --build --remove-orphans
 ```
 
+## Outcomes
+
+After some seconds, your Service Map in Splunk Observability cloud will looks like this:
+
+![servicemap](/img/servicemap.png)
+
 ## Kafka test/troubleshooting
 
 You can use the `kafkacat` container to perform tests, create new topics and troubleshooting in an easy way.
