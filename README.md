@@ -12,6 +12,9 @@ Set these following variables
 
 ```bash
 export SPLUNK_ACCESS_TOKEN=YOUR_SPLUNK_ACCESS_TOKEN
+```
+
+```bash
 export SPLUNK_REALM=YOUR_SPLUNK_REALM
 ```
 
