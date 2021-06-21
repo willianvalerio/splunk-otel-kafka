@@ -8,7 +8,6 @@ exporters:
     ingest_url: https://ingest.${SPLUNK_REALM}.signalfx.com
     realm: ${SPLUNK_REALM}
     sync_host_metadata: true
-    correlation: null
 extensions:
   health_check: null
   zpages:
@@ -86,7 +85,8 @@ processors:
   resourcedetection:
     detectors:
       - system
-    override: false
+      - env
+    override: true
   resource/add_environment:
     attributes:
     - action: insert
