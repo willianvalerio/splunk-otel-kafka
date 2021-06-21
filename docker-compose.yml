@@ -96,7 +96,7 @@ services:
 
         
   splunk-otel-collector:
-    image: quay.io/signalfx/splunk-otel-collector:latest
+    image: quay.io/signalfx/splunk-otel-collector:0.28.1
     container_name: splunk-otel-collector
     command: ["--config=/etc/otel-collector-config.yaml"]
     pid: host
