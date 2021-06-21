@@ -2,7 +2,8 @@ FROM maven:3.6.0-jdk-8-slim AS build
 WORKDIR /app
 COPY . .
 RUN mvn clean package
-RUN curl -L https://github.com/signalfx/splunk-otel-java/releases/latest/download/splunk-otel-javaagent-all.jar \
+ENV OTEL_VERSION=1.1.0
+RUN curl -L https://github.com/signalfx/splunk-otel-java/releases/download/v${OTEL_VERSION}/splunk-otel-javaagent-all.jar \
      -o splunk-otel-javaagent.jar
 
 FROM openjdk:8-jre-slim
